@@ -1,2 +1,4 @@
 # Ignore the virtual envirnment
 venv/
+# ignore the pycache
+__pycache__/
