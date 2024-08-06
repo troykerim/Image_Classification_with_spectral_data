@@ -1,9 +1,11 @@
 '''
 Load images from a folder and store them into a list for later use in the program
 '''
-
 import os
+import numpy as np
 from PIL import Image
+from spectral import open_image
+
 
 # Old version of function
 """
@@ -28,12 +30,14 @@ def load_images(folder):
     #data_envi_files = []
     
     
-    # Get a list of all files in the folder
+    # Create a list of all files in the folder
     files = os.listdir(folder)
     
     # Sort files numerically
     files = sorted(files, key=lambda x: int(''.join(filter(str.isdigit, x)) or -1))
-    print(files)
+    
+    # For testing purposes comment this out, this will display all files in the input folder.
+    # print(files)
     
     # Split our .hdr files, data files, and .png files
     hdr_files = [f for f in files if f.endswith('.hdr')]
@@ -46,10 +50,20 @@ def load_images(folder):
         if data_file:
             envi_files.append((hdr_file, data_file))
             
+            # If using 3 lists
             #hdr_envi_files.append(hdr_file)
             #data_envi_files.append(data_file)
 
     for png_file in png_files:
         masked_files.append(png_file)
         
+    # Returns 2 lists. envi_files list contains 2 file types (.hdr and data-file)
     return envi_files, masked_files
+
+    # For 3 lists 
+    # return hdr_envi_files, data_envi_files, masked_files
+    
+
+
+
+
