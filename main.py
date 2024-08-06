@@ -7,22 +7,38 @@ from preprocessing import load_and_normalize
 if __name__ == "__main__":
     
     
-    # Load in the folder: 
+    # Load in the data folder: 
     folder_path = '/home/troy/sweet_potato_data_combined'  
     
-    envi_files, masked_files = load_images(folder_path)
+    hdr_envi_files, data_envi_files, masked_files = load_images(folder_path)
     
+    # Testing the lists after load_data.py
     # Display the lengths of both lists
-    print(f"Number of ENVI files: {len(envi_files)}")
+    #print(f"Number of ENVI files: {len(envi_files)}")
+    print(f"Number of ENVI files: {len(hdr_envi_files)}")
+    print(f"Number of data files: {len(data_envi_files)}")
     print(f"Number of masked files: {len(masked_files)}\n")
+    print(f"Here an example of data file: {hdr_envi_files[500]}")
+    print(f"Here an example of data file: {data_envi_files[1]}")
+    print(f"Number of masked files: {masked_files[490]}\n")
     
-    # Load, normalize, and mask the data
-    normalized_data_list, masked_data_list = load_and_normalize(folder_path)
     
-    # images = load_images(folder_path)
-    # images = load_images(folder_path)
-    # print(f"Loaded {len(images)} images from the folder: '{folder_path}'")
-
+        
+    # Split envi_files into hdr_files and data_files
+    hdr_files = [os.path.join(folder_path, hdr) for hdr, _ in hdr_envi_files]
+    data_files = [os.path.join(folder_path, data) for _, data in data_envi_files]
+    masked_files = [os.path.join(folder_path, mask) for mask in masked_files]
+    
+    # Pass the envi files and image mask to the preprocessing file
+    normalized_data_list, masked_data_list = load_and_normalize(hdr_files, data_files, masked_files)
+    
+    
+    # For displaying/testing purposes
+    """
+    images = load_images(folder_path)
+    images = load_images(folder_path)
+    print(f"Loaded {len(images)} images from the folder: '{folder_path}'")
+    """
 
     
     """

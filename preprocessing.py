@@ -24,30 +24,29 @@ def apply_mask(hyperspectral_data, mask):
     masked_data = hyperspectral_data * mask[:, :, np.newaxis]
     return masked_data
 
-def load_and_normalize(folder):
-    # Load images
-    envi_files, masked_files = load_images(folder)
-
+def load_and_normalize(hdr_files, data_files, mask_files):
     # Initialize lists to store normalized and masked data
     normalized_data_list = []
     masked_data_list = []
 
-    for (hdr_file, data_file), mask_file in zip(envi_files, masked_files):
-        # Load hyperspectral data
-        img = open_image(os.path.join(folder, hdr_file))
-        data = img.load().astype(np.float32)
+    # Process hyperspectral data
+    for hdr_file, data_file in zip(hdr_files, data_files):
+        img = open_image(hdr_file)
+        data = img.open_memmap()  # Using memory mapping to handle large files
 
         # Normalize the data
         normalized_data = normalize_data(data)
-
-        # Load the mask
-        mask = np.array(Image.open(os.path.join(folder, mask_file))) / 255.0
-
-        # Apply the mask
-        masked_data = apply_mask(normalized_data, mask)
-
-        # Append to lists
         normalized_data_list.append(normalized_data)
-        masked_data_list.append(masked_data)
 
-    return normalized_data_list, masked_data_list
+    # Process masks
+    for mask_file in mask_files:
+        mask = np.array(Image.open(mask_file)) / 255.0
+        masked_data_list.append(mask)
+
+    # Apply masks to normalized data
+    final_masked_data_list = []
+    for normalized_data, mask in zip(normalized_data_list, masked_data_list):
+        masked_data = apply_mask(normalized_data, mask)
+        final_masked_data_list.append(masked_data)
+
+    return normalized_data_list, final_masked_data_list
