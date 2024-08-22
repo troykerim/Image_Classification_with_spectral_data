@@ -23,7 +23,6 @@ if __name__ == "__main__":
     print(f"Number of masked files: {masked_files[490]}\n")
     
     
-        
     # Split envi_files into hdr_files and data_files
     hdr_files = [os.path.join(folder_path, hdr) for hdr, _ in hdr_envi_files]
     data_files = [os.path.join(folder_path, data) for _, data in data_envi_files]
