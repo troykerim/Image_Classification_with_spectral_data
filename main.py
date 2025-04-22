@@ -39,6 +39,29 @@ dirpath = '/home/jovyan/dataset_tester'
 print(dirpath)
 
 def split_files(dirpath):
+    """
+    Splits and categorizes the contents of a directory into .hdr files, data files, and .png mask files.
+
+    Parameters:
+    ----------
+    dirpath : str
+        The full path to the directory containing the hyperspectral dataset.
+
+    Returns:
+    -------
+    tuple of lists:
+        - hdr_files : list of str
+            Filenames ending with '.hdr', representing header files.
+        - data_files : list of str
+            Filenames that are not '.hdr' or '.png' files, assumed to be the associated hyperspectral data files (with no extension).
+        - mask_files : list of str
+            Filenames ending with '.png', representing binary mask images.
+
+    Notes:
+    -----
+    - Files are sorted numerically based on digits in their names.
+    - Non-file entries like subdirectories are not filtered out; this function assumes all entries in the directory are relevant files.
+    """
     # Get a list of all files in the folder
     files = os.listdir(dirpath)
     
@@ -55,6 +78,32 @@ def split_files(dirpath):
 hdr_files, data_files, mask_files = split_files(dirpath)
 
 def group_files(hdr_files, data_files, mask_files):
+    """
+    Groups corresponding .hdr, data, and mask (.png) files into tuples for each spectral image.
+
+    Parameters:
+    ----------
+    hdr_files : list of str
+        List of filenames ending in '.hdr', representing header files.
+    
+    data_files : list of str
+        List of filenames representing hyperspectral data files (no extension).
+    
+    mask_files : list of str
+        List of filenames ending in '.png', representing binary mask images.
+
+    Returns:
+    -------
+    paired_files : list of tuples
+        Each tuple contains the full paths to the corresponding (.hdr, data, .png) files 
+        for a single hyperspectral image, in the form: (hdr_path, data_path, mask_path).
+
+    Notes:
+    -----
+    - Assumes that all three file types share a common base filename.
+    - Only file sets for which all three components exist are included.
+    - Requires the global variable `dirpath` to be defined to construct full file paths.
+    """
     #hdr_files, data_files, mask_files = split_files(dirpath)
     paired_files = []
     for hdr_file in hdr_files:
@@ -68,6 +117,7 @@ def group_files(hdr_files, data_files, mask_files):
     return paired_files
 #Display each spectral image with its 3 files
 paired_files = group_files(hdr_files, data_files, mask_files)
+
 
 def load_and_resize_data(hdr_file, data_file, mask_file):
     # Load hyperspectral data
