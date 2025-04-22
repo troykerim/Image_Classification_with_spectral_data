@@ -225,14 +225,55 @@ def find_roi_pixels(mask):
 
 
 def extract_roi_spectral_data(hyperspectral_data, roi_coords):
+    """
+    Extracts spectral data from a hyperspectral image using region of interest (ROI) pixel coordinates.
+
+    Parameters
+    ----------
+    hyperspectral_data : np.ndarray
+        A 3D NumPy array of shape (height, width, bands) representing the hyperspectral image.
+
+    roi_coords : np.ndarray
+        A 2D NumPy array of shape (num_pixels, 2), where each row contains (row, column) indices 
+        of white pixels (i.e., ROI) in the binary mask.
+
+    Returns
+    -------
+    roi_spectral_data : np.ndarray
+        A 2D NumPy array of shape (num_pixels, bands) containing spectral data for each pixel 
+        in the region of interest.
+    """
+    
     roi_spectral_data = hyperspectral_data[roi_coords[:, 0], roi_coords[:, 1], :]
     return roi_spectral_data
+
+
 # Find ROI coordinates
 roi_coords = find_roi_pixels(resized_mask.numpy())
 roi_spectral_data = extract_roi_spectral_data(resized_data, roi_coords)
 
 
 def calculate_ndvi(roi_spectral_data):
+    """
+    Calculates the Normalized Difference Vegetation Index (NDVI) for each pixel in the ROI.
+
+    Parameters
+    ----------
+    roi_spectral_data : np.ndarray
+        A 2D NumPy array of shape (num_pixels, 2), where the first column corresponds to the red band 
+        and the second column corresponds to the near-infrared (NIR) band.
+
+    Returns
+    -------
+    ndvi : np.ndarray
+        A 1D NumPy array containing NDVI values for each pixel in the ROI.
+
+    Notes
+    -----
+    NDVI is calculated using the formula:
+        NDVI = (NIR - Red) / (NIR + Red + 1e-8)
+    where 1e-8 is added to the denominator to prevent division by zero.
+    """
     # Assume band 0 is Red and band 1 is NIR in the resized_data
     red_band = roi_spectral_data[:, 0]
     nir_band = roi_spectral_data[:, 1]
@@ -242,6 +283,7 @@ def calculate_ndvi(roi_spectral_data):
     return ndvi
 
 
+# Create labels for the project
 def get_label_name(label):
     labels = [
         "Healthy",
@@ -253,7 +295,7 @@ def get_label_name(label):
     ]
     return labels[label]
 
-
+# Assign labels based on a threshold
 def assign_label_from_ndvi(ndvi_value):
     if ndvi_value > 0.6:
         return 0  # Healthy
@@ -268,8 +310,55 @@ def assign_label_from_ndvi(ndvi_value):
     else:
         return 5  # Dead or Inanimate Object
 		
-
 class SweetPotatoDataset(Dataset):
+    """
+    A PyTorch Dataset class for loading, processing, and optionally augmenting hyperspectral 
+    sweet potato leaf data along with binary mask images.
+
+    This dataset computes the NDVI (Normalized Difference Vegetation Index) from two spectral bands 
+    (Red and NIR) using the masked region of interest (ROI), and assigns one of six class labels 
+    based on the NDVI value.
+
+    Optionally, the dataset supports data augmentation for minority classes to help balance 
+    class distribution during training.
+
+    Parameters
+    ----------
+    data_list : list of tuples
+        A list of (data_tensor, mask_tensor) tuples, where:
+            - data_tensor : torch.Tensor of shape [224, 224, 2]
+                Hyperspectral image containing two bands (Red and NIR).
+            - mask_tensor : torch.Tensor of shape [1, 224, 224]
+                Binary mask indicating the region of interest (ROI).
+
+    augment_minority : bool, optional (default=False)
+        Whether to apply data augmentation to underrepresented classes.
+
+    augment_factor : int, optional (default=3)
+        Number of augmented samples to generate per original minority sample.
+
+    Attributes
+    ----------
+    augmentations : torchvision.transforms.Compose
+        A sequence of data augmentation transformations including random flips,
+        rotations, and color jitter.
+
+    data_list : list
+        Processed and (optionally) augmented dataset of (data, mask) pairs.
+
+    Methods
+    -------
+    __len__()
+        Returns the number of samples in the dataset.
+
+    __getitem__(idx)
+        Returns the combined tensor of hyperspectral data and mask, and its NDVI-based label.
+
+    _augment_minority_classes(data_list)
+        Internally used to duplicate and augment samples from minority classes.
+
+    _get_combined_tensor_and_label(data, mask)
+        Computes the NDVI label for a given (data, mask) pair for internal use."""
     def __init__(self, data_list, augment_minority=False, augment_factor=3):
         self.data_list = data_list
         self.augment_minority = augment_minority
@@ -362,6 +451,50 @@ class SweetPotatoDataset(Dataset):
         return combined_tensor, torch.tensor(label, dtype=torch.long)
 		
 class Simple3DCNN(nn.Module):
+    """
+    A deep 3D Convolutional Neural Network for classifying hyperspectral data into 6 classes.
+
+    This model is designed to take as input a tensor of shape [batch_size, 3, 1, 224, 224], where:
+        - 2 channels represent Red and NIR spectral bands,
+        - 1 channel represents the binary mask,
+        - depth dimension is 1,
+        - spatial resolution is 224x224.
+
+    The model consists of:
+        - Two 3D convolutional layers with max pooling
+        - Six fully connected hidden layers
+        - Dropout regularization between each hidden layer
+        - Final output layer with 6 labels.
+
+    Attributes
+    ----------
+    conv1 : nn.Conv3d
+        First 3D convolution layer with 3 input channels and 64 output channels.
+
+    pool : nn.MaxPool3d
+        Max pooling operation with kernel size and stride over spatial dimensions.
+
+    conv2 : nn.Conv3d
+        Second 3D convolution layer with 64 input channels and 128 output channels.
+
+    dropout : nn.Dropout
+        Dropout with a probability of 0.4 applied after each fully connected layer.
+
+    fc1 : nn.Linear
+        First fully connected layer that flattens the convolutional output.
+
+    fc2 to fc7 : nn.Linear
+        Hidden fully connected layers with 256 neurons each, activated by ReLU.
+
+    fc9 : nn.Linear
+        Final output layer with 6 units for multi-class classification.
+
+    Methods
+    -------
+    forward(x)
+        Defines the forward pass of the network. Applies convolution, pooling, flattening, 
+        fully connected layers with dropout, and returns raw class logits.
+    """
     def __init__(self):
         super(Simple3DCNN, self).__init__()
         
@@ -372,7 +505,7 @@ class Simple3DCNN(nn.Module):
         # Dropout layer with a probability of 0.5 is default
         self.dropout = nn.Dropout(p=0.4)
 
-        # 7 Hidden Layers
+        # 6 Hidden Layers
         self.fc1 = nn.Linear(128 * 1 * 56 * 56, 256)
         self.fc2 = nn.Linear(256, 256) # Hidden Layer 1
         self.fc3 = nn.Linear(256, 256) 
@@ -411,6 +544,9 @@ class Simple3DCNN(nn.Module):
 
 resized_data_list = []
 resized_mask_list = []
+
+
+#-----Training Loop-----
 
 # Process each file pair to create resized data and mask tensors
 for hdr_file, data_file, mask_file in paired_files:
