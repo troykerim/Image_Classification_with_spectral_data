@@ -1,4 +1,9 @@
-# Ignore the virtual envirnment
+# Ignore the virtual environment
 venv/
-# ignore the pycache
+
+# Ignore Python cache
 __pycache__/
+
+# Ignore unused files
+/home/troy/Image_Classification_with_spectral_data/load_data.py
+/home/troy/Image_Classification_with_spectral_data/preprocessing.py
