@@ -120,6 +120,36 @@ paired_files = group_files(hdr_files, data_files, mask_files)
 
 
 def load_and_resize_data(hdr_file, data_file, mask_file):
+    """
+    Loads hyperspectral data and corresponding mask image, selects specific bands, and resizes both to 224x224.
+
+    Parameters
+    ----------
+    hdr_file : str
+        Path to the .hdr header file for the hyperspectral image.
+    
+    data_file : str
+        Path to the associated hyperspectral data file (no extension).
+    
+    mask_file : str
+        Path to the binary mask image file (.png format) corresponding to the hyperspectral image.
+
+    Returns
+    -------
+    resized_data : torch.Tensor
+        A 3D tensor of shape (224, 224, 2) containing the selected and resized spectral bands 
+        (band 23: 634 nm, and band 45: 810 nm).
+
+    resized_mask : torch.Tensor
+        A 2D tensor of shape (224, 224) representing the resized binary mask.
+
+    Notes
+    -----
+    - Band indices used: 23 (634 nm, Red) and 45 (810 nm, NIR).
+    - Both the hyperspectral data and the mask are resized using bilinear interpolation.
+    - The mask is assumed to be a binary image where white pixels represent the region of interest (ROI).
+    """
+    
     # Load hyperspectral data
     img = spectral.open_image(hdr_file)
     data = img.load()
@@ -151,9 +181,29 @@ def load_and_resize_data(hdr_file, data_file, mask_file):
     return resized_data, resized_mask
 resized_data, resized_mask = load_and_resize_data(paired_files[0][0], paired_files[0][1], paired_files[0][2])
 
-
-
 def find_roi_pixels(mask):
+    """
+    Identifies the (row, column) coordinates of the white pixels in a binary mask.
+
+    Parameters
+    ----------
+    mask : torch.Tensor or numpy.ndarray
+        A 2D mask where white pixels (values > 0.5) represent the Region of Interest (ROI).
+        Can be a PyTorch tensor or NumPy array.
+
+    Returns
+    -------
+    roi_coords : numpy.ndarray
+        A 2D array of shape (N, 2), where each row contains the (row, col) coordinates of 
+        a white pixel in the mask.
+
+    Notes
+    -----
+    - Converts NumPy input to PyTorch tensor if necessary.
+    - Removes singleton dimensions from the mask.
+    - Applies a threshold of 0.5 to identify white pixels (ROI).
+    - Coordinates are returned in NumPy format for compatibility with other NumPy-based functions.
+    """
     # Ensure mask is a PyTorch tensor
     if not isinstance(mask, torch.Tensor):
         mask = torch.tensor(mask)
@@ -171,7 +221,7 @@ def find_roi_pixels(mask):
     if roi_coords.shape[1] > 2:
         roi_coords = roi_coords[:, :2]  # Take only the row and col indices
 
-    return roi_coords.numpy()  # Convert to numpy if needed
+    return roi_coords.numpy()  # Convert to numpy 
 
 
 def extract_roi_spectral_data(hyperspectral_data, roi_coords):
