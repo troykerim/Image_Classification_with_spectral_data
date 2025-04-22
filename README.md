@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is part of the **Astro Cultivators** (now **FOODI**) initiative from the **Autonomous Research Center for STEAHM** (https://arcs.center/astro-cultivators/). It was also developed in connection with the [NASA Deep Space Food Challenge](https://www.nasa.gov/prizes-challenges-and-crowdsourcing/centennial-challenges/deep-space-food-challenge/), which aims to advance food production technologies suitable for long-duration space missions. The goal of this project was to build a machine learning model capable of diagnosing plant health through hyperspectral image classification.
+This project is part of the **Astro Cultivators** (now **FOODI**) initiative from the [**Autonomous Research Center for STEAHM (ARCS)**](https://arcs.center/astro-cultivators/). It was also developed in connection with the [NASA Deep Space Food Challenge](https://www.nasa.gov/prizes-challenges-and-crowdsourcing/centennial-challenges/deep-space-food-challenge/), which aims to advance food production technologies suitable for long-duration space missions. The goal of this project was to build a machine learning model capable of diagnosing plant health through hyperspectral image classification.
 
 The model classifies sweet potato leaves into six categories based on **plant necrosis**, which refers to the natural decay or death of plant tissue. Hyperspectral images were captured using the **Cubert Ultris S5** camera, producing a custom dataset that integrates spatial and spectral information in a three-dimensional format.
 
