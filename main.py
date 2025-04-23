@@ -547,6 +547,76 @@ resized_mask_list = []
 
 
 #-----Training Loop-----
+"""
+Performs K-Fold Cross-Validation with Early Stopping for training and evaluating a 3D CNN model 
+on hyperspectral sweet potato leaf data.
+
+This training loop uses 5-fold stratified cross-validation to evaluate model performance across multiple data splits. 
+Each fold trains a new instance of the Simple3DCNN model with weighted CrossEntropy loss to account for class imbalance. 
+The NDVI-based labels are used for classification into six necrosis severity categories.
+
+The training pipeline includes:
+- Data splitting into train/test sets for each fold
+- Construction of PyTorch datasets and DataLoaders
+- Model instantiation and optimizer setup
+- NDVI-based label computation from hyperspectral and mask tensors
+- Training with early stopping and learning rate reduction on plateau
+- Evaluation of model accuracy and confusion matrices for each fold
+- Aggregation of performance metrics for post-training reporting
+
+Parameters
+----------
+k : int
+    Number of folds used for cross-validation (e.g., 5).
+
+batch_size : int
+    Mini-batch size used in DataLoader.
+
+patience : int
+    Number of epochs without improvement in validation loss before early stopping is triggered.
+
+lr : float
+    Learning rate used by the Adam optimizer.
+
+weight_decay : float
+    L2 regularization term for Adam optimizer.
+
+num_epochs : int
+    Maximum number of epochs to run if early stopping doesn't trigger.
+
+weights : torch.Tensor
+    Initial class weights used by CrossEntropyLoss for handling class imbalance.
+
+Attributes Tracked
+------------------
+fold_accuracies : list of float
+    Stores test accuracy for each fold.
+
+confusion_matrices : list of np.ndarray
+    Stores normalized confusion matrix for each fold.
+
+epoch_counts : list of int
+    Number of epochs completed per fold (affected by early stopping).
+
+initial_weights_list : list of list
+    The class weights used at the start of each fold.
+
+final_weights_list : list of list
+    Extracted values from the final layer weights (fc6) after training each fold.
+
+Returns
+-------
+None
+
+Displays
+--------
+- Epoch-level loss and timing logs
+- Fold-level accuracy and confusion matrices
+- Average accuracy across all folds
+- Number of epochs per fold
+- Initial and final class weights
+- A final consolidated confusion matrix across all folds (This is were the final accuracy % can be found)
+"""
 
 # Process each file pair to create resized data and mask tensors
 for hdr_file, data_file, mask_file in paired_files:
