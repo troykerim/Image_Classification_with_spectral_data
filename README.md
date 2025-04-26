@@ -36,8 +36,7 @@ This work demonstrates the powerful role of hyperspectral imaging in precision a
 ---
 
 ## Future Work
-
-- Add detailed Python docstrings to all functions  
+ 
 - Upload screenshots and additional visuals from the GUI and results  
 - Consider compressing and hosting a sample version of the dataset for public demos
 
