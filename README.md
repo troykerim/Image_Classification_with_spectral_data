@@ -36,9 +36,10 @@ This work demonstrates the powerful role of hyperspectral imaging in precision a
 ---
 
 ## Quick Images
-
+### Healthy Plants
 ![Healthy Plants](images/Healthy_Plants.png)
 
+### Unhealthy Plants
 ![Unhealthy Plants](images/Unhealthy_Plants.png)
 
 
