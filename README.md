@@ -42,6 +42,33 @@ This work demonstrates the powerful role of hyperspectral imaging in precision a
 ### Unhealthy Plants
 ![Unhealthy Plants](images/Unhealthy_Plants.png)
 
+### Hyperspectral Image Sample
+![Hyperspectral Image Sample](images/Hyperspectral_Image.png)
+
+### Masked Image 
+![Hyperspectral Image Sample](images/Masked_image.png)
+
+### Spectral Images at differenct frequencies
+![Spectral Images](images/Spectral_Images.png)
+
+### Camera Setup
+![Camera Setup](images/Camera_Setup.png)
+
+### Model Summaries
+![Model Summary 1](images/Model_summary1.png)
+
+![Model Summary 2](images/Model_summary2.png)
+
+![Model Summary 3](images/Model_summary3.png)
+
+### Confusion Matrices
+![Confusion Matrix 1](images/Confusion_Matrix1.png)
+
+![Confusion Matrix 2](images/Confusion_Matrix2.png)
+
+![Confusion Matrix 3](images/Confusion_Matrix3.png)
+
+
 
 ## Future Work
  
